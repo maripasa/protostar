@@ -46,6 +46,9 @@ int main() {
     draw_line(buf, 88, 10, 82, 49, 1);
     draw_line(buf, 85, 29, 111, 30, 1);
     draw_line(buf, 110, 12, 108, 49, 1);
+    
+    // The line
+    draw_line(buf, 9, 34, 111, 36, 1);
 
     render(buf, &frame_area);
 

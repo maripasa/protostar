@@ -62,7 +62,7 @@ void draw_line(uint8_t *buf, int x0, int y0, int x1, int y1, bool on)
   }
 }
 
-inline int get_font_index(uint8_t ch)
+static inline int get_font_index(uint8_t ch)
 {
   if (ch >= 'A' && ch <= 'Z')
   {
