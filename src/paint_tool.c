@@ -2,9 +2,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#include "../lib/draw/fonts.h"
-#include "../lib/draw/draw.h"
-#include "../lib/draw/ssd1306_i2c.h"
+#include "../lib/display/draw.h"
+#include "../lib/display/ssd1306_i2c.h"
 
 #define _u(x) ((uint8_t)(x))
 

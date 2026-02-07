@@ -3,8 +3,8 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include "../lib/draw/ssd1306.h"
-#include "../lib/draw/draw.h"
+#include "../lib/display/ssd1306.h"
+#include "../lib/display/draw.h"
 
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
