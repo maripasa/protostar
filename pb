@@ -6,7 +6,8 @@ P_NAME="protostar"
 
 build_paint_tool() {
   echo -e "\033[33;1;4mDebug paint_tool flag used, compiling paint_tool\033[0m"
-  gcc -I./lib/draw ./src/paint_tool.c ./lib/draw/draw.c -o $PT_OUT
+  rm $PT_OUT
+  gcc -I./lib/display ./src/paint_tool.c ./lib/display/draw.c -o $PT_OUT
   if [ -f $PT_OUT ]; then
     $PT_OUT
   else
