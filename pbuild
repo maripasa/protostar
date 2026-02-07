@@ -1,0 +1,20 @@
+#!/bin/bash
+if [ "$1" == "pt" ]; then
+  echo "debug paint_tool flag used, compiling paint_tool"
+  echo "gcc src/paint_tool.c -o build/paint_tool.out"
+  gcc src/paint_tool.c -o build/paint_tool.out
+  ./build/paint_tool.out
+  exit 0
+fi
+
+PICOW_PATH="/media/maripasa/RPI-RP2/"
+
+cmake -S . -B build -DPICO_BOARD=pico_w && \
+cmake --build build --target hello_world
+
+if [ ! -d $PICOW_PATH ]; then
+    echo -e "\033[31;1;4mPICOW_PATH DOES NOT EXIST, ENABLE WRITE IN BOARD.\033[0m"
+else
+    cp ./build/*.uf2 $PICOW_PATH
+    echo ".uf2 FILE MOVED TO BOARD."
+fi

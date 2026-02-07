@@ -6,8 +6,9 @@ project(protostar)
 pico_sdk_init()
 
 add_executable(hello_world
-    src/hello_world.c
-    lib/ssd1306/ssd1306_i2c.c
+    src/display.c
+    lib/draw/draw.c
+    lib/draw/ssd1306_i2c.c
 )
 
 target_link_libraries(hello_world

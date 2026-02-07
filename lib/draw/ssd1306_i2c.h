@@ -29,7 +29,7 @@ All text above, and the splash screen must be included in any redistribution
 // Define the size of the display we have attached. This can vary, make sure you
 // have the right size defined or the output will look rather odd!
 // Code has been tested on 128x32 and 128x64 OLED displays
-#define SSD1306_HEIGHT 32
+#define SSD1306_HEIGHT 64
 #define SSD1306_WIDTH 128
 
 #define SSD1306_I2C_ADDR _u(0x3C)
