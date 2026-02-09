@@ -50,6 +50,8 @@ int main() {
     // The line
     draw_line(buf, 9, 34, 111, 36, 1);
 
+
+
     render(buf, &frame_area);
 
     while (1) {};

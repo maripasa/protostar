@@ -26,12 +26,13 @@ All text above, and the splash screen must be included in any redistribution
 #ifndef SSD1306_I2C_H_
 #define SSD1306_I2C_H_
 
+#define _u(x) ((uint8_t)(x))
+
 // Define the size of the display we have attached. This can vary, make sure you
 // have the right size defined or the output will look rather odd!
 // Code has been tested on 128x32 and 128x64 OLED displays
 #define SSD1306_HEIGHT 64
 #define SSD1306_WIDTH 128
-
 #define SSD1306_I2C_ADDR _u(0x3C)
 
 // 400 is usual, but often these can be overclocked to improve display response.

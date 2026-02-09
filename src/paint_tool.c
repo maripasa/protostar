@@ -1,53 +1,89 @@
+// I just want to use the blocks man... Want to bet it would be less strange to bleed to a window?... nah
+#define _XOPEN_SOURCE_EXTENDED
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include <assert.h>
+#include <string.h>
+#include <time.h>
+#include <locale.h>
+#include <ncurses.h>
+#include <wchar.h>
 
 #include "../lib/display/draw.h"
 #include "../lib/display/ssd1306_i2c.h"
 
-#define _u(x) ((uint8_t)(x))
+#define EMPTY_BLOCK L' '
+#define UPPER_BLOCK L'▀'
+#define LOWER_BLOCK L'▄'
+#define FULL_BLOCK L'█'
 
-#define EB " "
-#define UB "▀"
-#define LB "▄"
-#define FB "█"
-#define CL "\x1b[H\x1b[2J"
+uint8_t display_buffer[SSD1306_BUF_LEN];
 
-uint8_t buf[SSD1306_BUF_LEN];
+double last_frame_time;
+double last_fps_update;
 
-void render(uint8_t *buf);
+void render2terminal(uint8_t *display_buffer);
 
-int main()
-{
-    //R
-    draw_line(buf, 9, 54, 17, 3, 1);
-    draw_line(buf, 17, 3, 35, 12, 1);
-    draw_line(buf, 35, 12, 13, 32, 1);
-    draw_line(buf, 13, 32, 31, 52, 1);
-
-    //H
-    draw_line(buf, 88, 10, 82, 49, 1);
-    draw_line(buf, 85, 29, 111, 30, 1);
-    draw_line(buf, 110, 12, 108, 49, 1);
-    
-    // The line
-    draw_line(buf, 9, 34, 111, 36, 1);
-    
-    render(buf);
-
-    return 0;
+static double now_seconds(void) {
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  return (double)ts.tv_sec + (double)ts.tv_nsec * 1e-9;
 }
 
-/*
-frame_area.start_col  = 0;
-frame_area.end_col    = SSD1306_WIDTH - 1;
-frame_area.start_page = 0;
-frame_area.end_page   = SSD1306_NUM_PAGES - 1;
-calc_render_area_buflen(&frame_area);
-memset(buf, 0, SSD1306_BUF_LEN);
-render(buf, &frame_area);
-*/
+int main() {
+  setlocale(LC_ALL, ""); // Unicode for blocks
+  initscr(); // Start curses mode
+  nodelay(stdscr, TRUE); // Non-blocking input
+  cbreak(); // Line buffering disabled
+  noecho();
+  keypad(stdscr, TRUE); // Special keys
+  curs_set(0); // Hide cursor
+  scrollok(stdscr, FALSE); // No scrolling
+
+  last_frame_time = now_seconds();
+  last_fps_update = last_frame_time;
+  char fps_number[16] = "0";
+  char key_str[16] = "0";
+
+  int ch;
+  int frames = 0;
+
+  while (1) {
+    memset(display_buffer, 0, SSD1306_BUF_LEN);
+
+
+    // Input
+    ch = getch();
+    if (ch != ERR) {
+      snprintf(key_str, sizeof(key_str), "%c %d", ch, ch);
+    }
+    write_string(display_buffer, 0, 9, key_str);
+
+    double current_time = now_seconds();
+    //double delta = current_time - last_frame_time;
+    frames++;
+
+    // Show FPS every 0.5s
+    double delta_fps_update = current_time - last_fps_update;
+    if (delta_fps_update > 0.5) {
+      float fps = frames / delta_fps_update;
+      snprintf(fps_number, sizeof(fps_number), "%.0f", fps);
+      frames = 0;
+      last_fps_update = current_time;
+    }
+
+    write_string(display_buffer, 0, 0, fps_number);
+    draw_texture(display_buffer, 20, 20, BRUSH, false, true);
+
+    last_frame_time = current_time;
+
+    render2terminal(display_buffer);
+  }
+
+  endwin(); // End curses mode
+  return 0;
+}
 
 /*
  * Buf has the data for a 128 x 64 screen.
@@ -66,35 +102,26 @@ render(buf, &frame_area);
  *
  * Function could be better but idc
 */
+void render2terminal(uint8_t *display_buffer) {
+  for (int row = 0; row < SSD1306_HEIGHT / 2; row++) {
+    wchar_t line[SSD1306_WIDTH + 1]; // +1 null
 
-void render(uint8_t *buf)
-{
-  printf(CL);
-  for (int row = 0; row < (SSD1306_HEIGHT / 2); row++) 
-  {
-    for (int ch = 0; ch < SSD1306_WIDTH; ch++)
-    {
-      uint8_t origin = buf[ch + SSD1306_WIDTH * (row / 4)];
+    for (int col = 0; col < SSD1306_WIDTH; col++) {
+      uint8_t byte = display_buffer[col + SSD1306_WIDTH * (row / 4)];
       uint8_t mask = 0b00000011;
       uint8_t shift = 2 * (row % 4);
-      uint8_t res = mask & origin >> shift;
-      assert(res >= 0 && res < 4);
-      switch (res)
-      {
-        case 0b00:
-          printf(EB);
-          break;
-        case 0b01:
-          printf(UB);
-          break;
-        case 0b10:
-          printf(LB);
-          break;
-        case 0b11:
-          printf(FB);
-          break;
+      uint8_t val = (byte >> shift) & mask;
+
+      switch (val) {
+        case 0b00: line[col] = EMPTY_BLOCK; break;
+        case 0b01: line[col] = UPPER_BLOCK; break;
+        case 0b10: line[col] = LOWER_BLOCK; break;
+        case 0b11: line[col] = FULL_BLOCK; break;
       }
     }
-  printf("\n");
+    line[SSD1306_WIDTH] = L'\0';
+
+    mvaddwstr(row, 0, line);
   }
+  refresh();
 }
